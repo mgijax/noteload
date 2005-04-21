@@ -9,18 +9,15 @@
 cd `dirname $0`
 
 # DB schema directory; its Configuration file will set up all you need
-#setenv SCHEMADIR /usr/local/mgi/live/dbutils/mgd/mgddbschema
-setenv SCHEMADIR /home/lec/db/mgddbschema
+setenv SCHEMADIR /usr/local/mgi/live/dbutils/mgd/mgddbschema
 source ${SCHEMADIR}/Configuration
 
 # Nomen load specific
-#setenv NOTELOAD	/usr/local/mgi/dataload/noteload/mginoteload.py
-setenv NOTELOAD	/home/lec/loads/noteload/mginoteload.py
+setenv NOTELOAD	/usr/local/mgi/dataload/noteload/mginoteload.py
 setenv NOTEMODE	load
-#setenv NOTEMODE	preview
 
 # specific to your load
-setenv DATAFILE 	specific to your load
+setenv DATAFILE 	/data/loads/go/gotext/input/gotext.txt
 setenv NOTETYPE		"GO Text"
 setenv OBJECTTYPE       Marker
 

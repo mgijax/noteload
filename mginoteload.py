@@ -371,7 +371,8 @@ def processFile():
 		if mgiObjects.has_key(accID):
 			objectKey = mgiObjects[accID]
 		else:
-			exit(1, 'Invalid Accession ID (%d): %s\n' % (lineNum, accID))
+			continue
+#			exit(1, 'Invalid Accession ID (%d): %s\n' % (lineNum, accID))
 
 		noteTokens = string.split(notes, '\\n')
 		newNotes = ''
