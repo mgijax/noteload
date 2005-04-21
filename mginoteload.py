@@ -213,7 +213,7 @@ def init():
                 elif opt[0] == '-O':
                         objectType = opt[1]
                 elif opt[0] == '-T':
-                        noteTypeName = opt[1]
+                        noteTypeName = regsub.gsub('"', '', opt[1])
                 else:
                         showUsage()
  
