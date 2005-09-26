@@ -374,6 +374,9 @@ def processFile():
 			continue
 #			exit(1, 'Invalid Accession ID (%d): %s\n' % (lineNum, accID))
 
+		if len(notes) == 0:
+		    continue
+
 		noteTokens = string.split(notes, '\\n')
 		newNotes = ''
 		for n in noteTokens:

@@ -1,3 +1,9 @@
+TAG: noteload-3-3-0-1
+DATE: 09/26/2005
+STAFF: lec
+RELEASE: A
+CHANGES: don't generate a Note record if the len(note) == 0
+
 TAG: noteload-3-2-0-3
 DATE: 04/21/2005
 STAFF: lec
