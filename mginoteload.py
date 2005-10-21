@@ -33,7 +33,9 @@
 #	-T = Note Type (ex. "GO Text")
 #
 #	processing modes:
-#		load - delete the Notes for the given MGI Object and load the new Notes
+#		load - delete all Notes for the given MGI Object Type and Note Type and load the new Notes
+#
+#		incremental - delete the Notes for the Objects specified in the input file
 #
 #		preview - perform all record verifications but do not load the data or
 #		          make any changes to the database.  used for testing or to preview
@@ -61,9 +63,11 @@
 #	    If the verification succeeeds, store the MGI ID/Key pair in a dictionary
 #	    for future reference.
 #
-#	2.  If mode == load, delete any existing Notes of the specified Object/Note Type.
+#	2.  If mode == load, delete all existing Notes of the specified Object Type/Note Type.
 #
-#	3.  If mode == load, bcp the data into the database.
+#	3.  If mode == incremental, delete any existing Notes for the specified Objects/Note Type.
+#
+#	4.  If mode == load or incremental, bcp the data into the database.
 #	
 #
 # History:
@@ -92,12 +96,14 @@ diagFile = ''		# file descriptor
 errorFile = ''		# file descriptor
 noteFile = ''		# file descriptor
 noteChunkFile = ''	# file descriptor
+sqlFile = ''		# file descriptor
 
 diagFileName = ''	# file name
 errorFileName = ''	# file name
 noteFileName = ''	# file name
 noteChunkFileName = ''	# file name
 passwordFileName = ''	# file name
+sqlFileName = ''	# file name
 
 noteTable = 'MGI_Note'
 noteChunkTable = 'MGI_NoteChunk'
@@ -176,7 +182,7 @@ def init():
  
 	global inputFile, diagFile, errorFile, errorFileName, diagFileName
 	global passwordFileName
-	global noteFile, noteFileName, noteChunkFile, noteChunkFileName
+	global noteFile, noteFileName, noteChunkFile, noteChunkFileName, sqlFile, sqlFileName
 	global mode
 	global noteTypeName
 	global objectTypeKey, userKey
@@ -229,6 +235,7 @@ def init():
 	errorFileName = tail + '.' + fdate + '.error'
 	noteFileName = tail + '.' + noteTable + '.bcp'
 	noteChunkFileName = tail + '.' + noteChunkTable + '.bcp'
+	sqlFileName = tail + '.sql'
 
 	try:
 		inputFile = open(inputFileName, 'r')
@@ -254,6 +261,11 @@ def init():
 		noteChunkFile = open(noteChunkFileName, 'w')
 	except:
 		exit(1, 'Could not open file %s\n' % noteChunkFileName)
+		
+	try:
+		sqlFile = open(sqlFileName, 'w')
+	except:
+		exit(1, 'Could not open file %s\n' % sqlFileName)
 		
 	# Log all SQL
 	db.set_sqlLogFunction(db.sqlLogAll)
@@ -329,6 +341,8 @@ def verifyMode():
 		DEBUG = 0
 		db.sql('delete from MGI_Note where _MGIType_key = %s ' % (objectTypeKey) + \
 			'and _NoteType_key = %s' % (noteTypeKey), None)
+	elif mode == 'incremental':
+		DEBUG = 0
 	elif mode == 'preview':
 		DEBUG = 1
 	else:
@@ -376,6 +390,11 @@ def processFile():
 
 		if len(notes) == 0:
 		    continue
+
+	        if mode == 'incremental' or mode == 'preview':
+		    sqlFile.write('delete from MGI_Note where _MGIType_key = %s ' % (objectTypeKey) + \
+			    'and _NoteType_key = %s ' % (noteTypeKey) + \
+			    'and _Object_key = %s\ngo\n' % (objectKey))
 
 		noteTokens = string.split(notes, '\\n')
 		newNotes = ''
@@ -435,6 +454,12 @@ def bcpFiles():
 
 	noteFile.close()
 	noteChunkFile.close()
+	sqlFile.close()
+
+	sqlCmd = 'cat %s | isql -S%s -D%s -U%s -i%s' \
+		% (passwordFileName, db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
+	diagFile.write('%s\n' % sqlCmd)
+	os.system(sqlCmd)
 
 	bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
 		% (passwordFileName, db.get_sqlDatabase(), \
