@@ -9,7 +9,7 @@
 cd `dirname $0`
 
 # DB schema directory; its Configuration file will set up all you need
-setenv SCHEMADIR /home/lec/db/live/mgddbschema
+setenv SCHEMADIR /usr/local/mgi/live/dbutils/mgd/mgddbschema
 source ${SCHEMADIR}/Configuration
 
 # Nomen load specific
