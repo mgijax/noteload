@@ -80,7 +80,7 @@
 import sys
 import os
 import string
-import regsub
+import re
 import getopt
 import accessionlib
 import db
@@ -219,7 +219,7 @@ def init():
                 elif opt[0] == '-O':
                         objectType = opt[1]
                 elif opt[0] == '-T':
-                        noteTypeName = regsub.gsub('"', '', opt[1])
+                        noteTypeName = re.sub('"', '', opt[1])
                 else:
                         showUsage()
  
