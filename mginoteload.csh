@@ -10,6 +10,8 @@ setenv CONFIGFILE $1
 
 source ${CONFIGFILE}
 
+setenv NOTELOAD         ${DATALOAD}/noteload/mginoteload.py
+
 cd ${NOTEDATADIR}
 
 rm -rf ${NOTELOG}
