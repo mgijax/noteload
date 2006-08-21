@@ -6,23 +6,12 @@
 # Usage:  mginoteload.csh
 #
 
-cd `dirname $0`
+cd `dirname $0` && source ./Configuration
 
-# DB schema directory; its Configuration file will set up all you need
-setenv SCHEMADIR /usr/local/mgi/live/dbutils/mgd/mgddbschema
-#setenv SCHEMADIR /home/lec/db/mgddbschema
-source ${SCHEMADIR}/Configuration
-
-# Nomen load specific
-#setenv NOTELOAD	/usr/local/mgi/dataload/noteload/mginoteload.py
-setenv NOTELOAD	/home/lec/loads/noteload/mginoteload.py
-setenv NOTEMODE	load
-#setenv NOTEMODE	preview
-
-# specific to your load
-setenv DATAFILE 	specific to your load
+setenv NOTEMODE		load
+setenv NOTEINPUTFILE 	specific to your load
 setenv NOTETYPE		"GO Text"
-setenv OBJECTTYPE       Marker
+setenv NOTEOBJECTTYPE   Marker
 
 setenv LOG `basename $0`.log
 
@@ -34,7 +23,7 @@ date >> ${LOG}
 #
 # Execute mginoteload
 #
-${NOTELOAD} -S${DBSERVER} -D${DBNAME} -U${DBUSER} -P${DBPASSWORDFILE} -I${DATAFILE} -M${NOTEMODE} -O${OBJECTTYPE} -T\"${NOTETYPE}\" >>& ${LOG}
+${NOTELOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGI_DBUSER} -P${MGI_DBPASSWORDFILE} -I${NOTEINPUTFILE} -M${NOTEMODE} -O${NOTEOBJECTTYPE} -T\"${NOTETYPE}\" >>& ${LOG}
 
 date >> ${LOG}
 
