@@ -1,29 +1,23 @@
 #!/bin/csh -f
 
 #
-# Wrapper script to create & load mginotes into MGI_Note
+# Wrapper script to create & load notes into MGI_Note
 #
 # Usage:  mginoteload.csh
 #
 
-cd `dirname $0` && source ./Configuration
+setenv CONFIGFILE $1
 
-setenv NOTEMODE		load
-setenv NOTEINPUTFILE 	specific to your load
-setenv NOTETYPE		"GO Text"
-setenv NOTEOBJECTTYPE   Marker
+source ${CONFIGFILE}
 
-setenv LOG `basename $0`.log
+cd ${NOTEDATADIR}
 
-rm -rf ${LOG}
-touch ${LOG}
- 
-date >> ${LOG}
- 
-#
-# Execute mginoteload
-#
-${NOTELOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGI_DBUSER} -P${MGI_DBPASSWORDFILE} -I${NOTEINPUTFILE} -M${NOTEMODE} -O${NOTEOBJECTTYPE} -T\"${NOTETYPE}\" >>& ${LOG}
+rm -rf ${NOTELOG}
+touch ${NOTELOG}
 
-date >> ${LOG}
+date >> ${NOTELOG}
+
+${NOTELOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGI_DBUSER} -P${MGI_DBPASSWORDFILE} -I${NOTEINPUTFILE} -M${NOTEMODE} -O${NOTEOBJECTTYPE} -T\"${NOTETYPE}\"
+
+date >> ${NOTELOG}
 
