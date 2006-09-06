@@ -1,0 +1,16 @@
+#!/bin/csh -f
+
+#
+# default configuration file
+#
+
+source ./Configuration
+
+setenv NOTELOAD		${DATALOAD}/noteload/mginoteload.py
+setenv NOTEMODE		load
+setenv NOTEDATADIR	/mgi/all/wts_projects/7600/7655/data
+setenv NOTEINPUTFILE	${NOTEDATADIR}/QTL_CoordinatesTextInfo.txt
+setenv NOTELOG          ${NOTEINPUTFILE}.log
+setenv NOTETYPE		"QTL Coordinate"
+setenv NOTEOBJECTTYPE	Marker
+

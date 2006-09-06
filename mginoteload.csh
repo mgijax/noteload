@@ -1,40 +1,25 @@
 #!/bin/csh -f
 
 #
-# Wrapper script to create & load mginotes into MGI_Note
+# Wrapper script to create & load notes into MGI_Note
 #
 # Usage:  mginoteload.csh
 #
 
-cd `dirname $0`
+setenv CONFIGFILE $1
 
-# DB schema directory; its Configuration file will set up all you need
-setenv SCHEMADIR /usr/local/mgi/live/dbutils/mgd/mgddbschema
-#setenv SCHEMADIR /home/lec/db/mgddbschema
-source ${SCHEMADIR}/Configuration
+source ${CONFIGFILE}
 
-# Nomen load specific
-#setenv NOTELOAD	/usr/local/mgi/dataload/noteload/mginoteload.py
-setenv NOTELOAD	/home/lec/loads/noteload/mginoteload.py
-setenv NOTEMODE	load
-#setenv NOTEMODE	preview
+setenv NOTELOAD         ${DATALOAD}/noteload/mginoteload.py
 
-# specific to your load
-setenv DATAFILE 	specific to your load
-setenv NOTETYPE		"GO Text"
-setenv OBJECTTYPE       Marker
+cd ${NOTEDATADIR}
 
-setenv LOG `basename $0`.log
+rm -rf ${NOTELOG}
+touch ${NOTELOG}
 
-rm -rf ${LOG}
-touch ${LOG}
- 
-date >> ${LOG}
- 
-#
-# Execute mginoteload
-#
-${NOTELOAD} -S${DBSERVER} -D${DBNAME} -U${DBUSER} -P${DBPASSWORDFILE} -I${DATAFILE} -M${NOTEMODE} -O${OBJECTTYPE} -T\"${NOTETYPE}\" >>& ${LOG}
+date >> ${NOTELOG}
 
-date >> ${LOG}
+${NOTELOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGI_DBUSER} -P${MGI_DBPASSWORDFILE} -I${NOTEINPUTFILE} -M${NOTEMODE} -O${NOTEOBJECTTYPE} -T"${NOTETYPE}"
+
+date >> ${NOTELOG}
 
