@@ -1,67 +1,61 @@
+TAG: noteload-3-5-1-2
+DATE: 09/21/2006
+STAFF: lec
+CHANGES: TR 7894;mgiconfig
+
 TAG: noteload-3-5-1-1
 DATE: 09/06/2006
 STAFF: lec
-RELEASE: A
 CHANGES: build 36; merge
 
 TAG: noteload-build36-1
 DATE: 08/22/2006
 STAFF: lec
-RELEASE: A
 CHANGES: build 36
 
 TAG: noteload-build36-BP
 DATE: 08/21/2006
 STAFF: lec
-RELEASE: A
 CHANGES: build 36 branch point tag
 
 TAG: noteload-3-3-0-3
 DATE: 11/18/2005
 STAFF: lec
-RELEASE: A
 CHANGES: gotextload.csh; fixed for production
 
 TAG: noteload-3-3-0-2
 DATE: 10/21/2005
 STAFF: lec
-RELEASE: A
 CHANGES: added incremental mode
 
 TAG: noteload-3-3-0-1
 DATE: 09/26/2005
 STAFF: lec
-RELEASE: A
 CHANGES: don't generate a Note record if the len(note) == 0
 
 TAG: noteload-3-2-0-3
 DATE: 04/21/2005
 STAFF: lec
-RELEASE: A
 CHANGES: MPR
 
 TAG: noteload-3-2-0-2
 TAG: noteload-3-2-0-1
 DATE: 03/25/2005
 STAFF: lec
-RELEASE: A
 CHANGES: MPR
 
 TAG: noteload-3-1-2-1
 DATE: 03/18/2005
 STAFF: lec
-RELEASE: A
 CHANGES: new
 
 TAG: noteload-3-2-1-1
 DATE: 03/15/2005
 STAFF: lec
-RELEASE: A
 CHANGES: new
 
 TAG: noteload-3-2-0-1
 DATE: 03/10/2005
 STAFF: lec
-RELEASE: A
 CHANGES: new
 
