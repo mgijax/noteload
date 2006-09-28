@@ -112,7 +112,7 @@ mode = ''		# processing mode
 noteTypeName = ''	# MGI_NoteType.noteType
 noteTypeKey = 0		# MGI_NoteType._NoteType_key
 objectTypeKey = ''	# MGI_Note._Object_key
-userKey = 0
+createdByKey = 0
 fieldDelim = '&=&'
 lineDelim = '#=#\n'
 
@@ -185,7 +185,7 @@ def init():
 	global noteFile, noteFileName, noteChunkFile, noteChunkFileName, sqlFile, sqlFileName
 	global mode
 	global noteTypeName
-	global objectTypeKey, userKey
+	global objectTypeKey, createdByKey
 	global mgiObjects
  
 	try:
@@ -284,7 +284,7 @@ def init():
 	errorFile.write('Start Date/Time: %s\n\n' % (mgi_utils.date()))
 
 	objectTypeKey = accessionlib.get_MGIType_key(objectType)
-	userKey = loadlib.verifyUser(db.get_sqlUser(), 0, errorFile)
+	createdByKey = loadlib.verifyUser(db.get_sqlUser(), 0, errorFile)
 
 	results = db.sql('select accID, _Object_key from ACC_Accession ' + \
 		'where _MGIType_key = %s ' % (objectTypeKey) + \
@@ -405,8 +405,8 @@ def processFile():
 			       '%d' % (objectKey) + fieldDelim + \
 			       '%d' % (objectTypeKey) + fieldDelim + \
 			       '%d' % (noteTypeKey) + fieldDelim + \
-			       '%d' % (userKey) + fieldDelim + \
-			       '%d' % (userKey) + fieldDelim + \
+			       '%d' % (createdByKey) + fieldDelim + \
+			       '%d' % (createdByKey) + fieldDelim + \
 			       '%s' % (loaddate) + fieldDelim + \
 			       '%s' % (loaddate) + lineDelim)
 
@@ -417,8 +417,8 @@ def processFile():
 			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
 		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
 		        noteChunkFile.write('%s' % (newNotes[:255]) + fieldDelim)
-		        noteChunkFile.write('%d' % (userKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (userKey) + fieldDelim)
+		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + lineDelim)
 			newNotes = newNotes[255:]
@@ -428,8 +428,8 @@ def processFile():
 			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
 		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
 		        noteChunkFile.write('%s' % (newNotes) + fieldDelim)
-		        noteChunkFile.write('%d' % (userKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (userKey) + fieldDelim)
+		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + lineDelim)
 
