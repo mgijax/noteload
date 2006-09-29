@@ -4,7 +4,7 @@
 # default configuration file
 #
 
-source ./Configuration
+source ${NOTELOAD}/Configuration
 
 setenv NOTEMODE		load
 setenv NOTEDATADIR	/mgi/all/wts_projects/7600/7655/data
