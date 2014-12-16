@@ -72,6 +72,9 @@
 #
 # History:
 #
+# lec	12/11/2014
+#	- TR11750/postgres : added logic for postgres version
+#
 # lec	02/28/2005
 #	- created
 #
@@ -83,9 +86,22 @@ import string
 import re
 import getopt
 import accessionlib
-import db
 import mgi_utils
 import loadlib
+
+try:
+    if os.environ['DB_TYPE'] == 'postgres':
+        import pg_db
+        db = pg_db
+        db.setTrace()
+        db.setAutoTranslateBE()
+    else:
+        import db
+        db.set_sqlLogFunction(db.sqlLogAll)
+
+except:
+    import db
+    db.set_sqlLogFunction(db.sqlLogAll)
 
 #globals
 
@@ -113,8 +129,9 @@ noteTypeName = ''	# MGI_NoteType.noteType
 noteTypeKey = 0		# MGI_NoteType._NoteType_key
 objectTypeKey = ''	# MGI_Note._Object_key
 createdByKey = 0
-fieldDelim = '&=&'
-lineDelim = '#=#\n'
+splitfieldDelim = '\t'
+fieldDelim = '\t'
+lineDelim = '\n'
 
 mgiObjects = {}
 
@@ -164,7 +181,6 @@ def exit(status, message = None):
 	except:
 		pass
 
-	db.useOneConnection()
 	sys.exit(status)
  
 def init():
@@ -226,6 +242,7 @@ def init():
 	# Initialize db.py DBMS parameters
         password = string.strip(open(passwordFileName, 'r').readline())
 	db.set_sqlLogin(user, password, server, database)
+
 	db.useOneConnection(1)
  
 	fdate = mgi_utils.date('%m%d%Y')	# current date
@@ -267,11 +284,11 @@ def init():
 	except:
 		exit(1, 'Could not open file %s\n' % sqlFileName)
 		
-	# Log all SQL
-	db.set_sqlLogFunction(db.sqlLogAll)
-
 	# Set Log File Descriptor
-	db.set_sqlLogFD(diagFile)
+	try:
+		db.set_sqlLogFD(diagFile)
+	except:
+		pass
 
 	diagFile.write('Start Date/Time: %s\n' % (mgi_utils.date()))
 	diagFile.write('Server: %s\n' % (server))
@@ -363,7 +380,7 @@ def processFile():
 
 	lineNum = 0
 
-	results = db.sql('select nextKey = max(_Note_key) + 1 from MGI_Note', 'auto')
+	results = db.sql('select max(_Note_key) + 1 as nextKey from MGI_Note', 'auto')
 	noteKey = results[0]['nextKey']
 
 	# For each line in the input file
@@ -374,13 +391,19 @@ def processFile():
 		lineNum = lineNum + 1
 
 		# Split the line into tokens
-		tokens = string.split(line[:-1], '\t')
+		tokens = string.split(line[:-1], splitfieldDelim)
 
 		try:
 			accID = tokens[0]
 			notes = tokens[1]
 		except:
 			exit(1, 'Invalid Line (%d): %s\n' % (lineNum, line))
+
+		# make sure we escacpe these characters
+		if os.environ['DB_TYPE'] == 'postgres':
+			notes = notes.replace('#', '\#')
+			notes = notes.replace('?', '\?')
+			notes = notes.replace('\\n', '\\\n')
 
 		if mgiObjects.has_key(accID):
 			objectKey = mgiObjects[accID]
@@ -396,10 +419,14 @@ def processFile():
 			    'and _NoteType_key = %s ' % (noteTypeKey) + \
 			    'and _Object_key = %s\ngo\n' % (objectKey))
 
-		noteTokens = string.split(notes, '\\n')
 		newNotes = ''
-		for n in noteTokens:
-		    newNotes = newNotes + n + chr(10)
+
+		if os.environ['DB_TYPE'] == 'postgres':
+			newNotes = notes
+		else:
+			noteTokens = string.split(notes, '\\n')
+			for n in noteTokens:
+				newNotes = newNotes + n + chr(10)
 
 		noteFile.write('%s' % (noteKey) + fieldDelim + \
 			       '%d' % (objectKey) + fieldDelim + \
@@ -412,6 +439,11 @@ def processFile():
 
 		# Write notes in chunks of 255
 		seqNum = 1
+
+		# add blanks in case the newline falls in between 2 rows of seqNum
+		if os.environ['DB_TYPE'] == 'postgres':
+			if len(newNotes) > 255:
+				newNotes = newNotes.replace('\\\n', '    \\\n')
 
 		while len(newNotes) > 255:
 			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
@@ -449,29 +481,53 @@ def bcpFiles():
 	#
 	'''
 
-	if DEBUG:
-		return
+	db.commit()
+	db.useOneConnection()
 
 	noteFile.close()
 	noteChunkFile.close()
 	sqlFile.close()
 
-	sqlCmd = 'cat %s | isql -S%s -D%s -U%s -i%s' \
-		% (passwordFileName, db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
-	diagFile.write('%s\n' % sqlCmd)
-	os.system(sqlCmd)
+	if DEBUG:
+		return
 
-	bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
-		% (passwordFileName, db.get_sqlDatabase(), \
-	   	noteTable, noteFileName, fieldDelim, lineDelim, errorFileName, db.get_sqlServer(), db.get_sqlUser(), diagFileName)
-	diagFile.write('%s\n' % bcpNote)
-	os.system(bcpNote)
+        if os.environ['DB_TYPE'] == 'postgres':
+	    #sqlCmd = 'psql -a -h%s -d%s -U%s --command "%s;"' \
+	#	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
+	    #diagFile.write('%s\n' % sqlCmd)
+	    #os.system(sqlCmd)
+    
+	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'%s\';"' \
+		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
+		       noteTable, noteFileName, fieldDelim,)
+	    diagFile.write('%s\n' % bcpNote)
+	    os.system(bcpNote)
+    
+	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'%s\';"' \
+		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
+		       noteChunkTable, noteChunkFileName, fieldDelim,)
+	    diagFile.write('%s\n' % bcpNote)
+	    os.system(bcpNote)
 
-	bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
-		% (passwordFileName, db.get_sqlDatabase(), \
-	   	noteChunkTable, noteChunkFileName, fieldDelim, lineDelim, errorFileName, db.get_sqlServer(), db.get_sqlUser(), diagFileName)
-	diagFile.write('%s\n' % bcpNote)
-	os.system(bcpNote)
+	else:
+	    sqlCmd = 'cat %s | isql -S%s -D%s -U%s -i%s' \
+		    % (passwordFileName, db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
+	    diagFile.write('%s\n' % sqlCmd)
+	    os.system(sqlCmd)
+    
+	    bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
+		    % (passwordFileName, db.get_sqlDatabase(), \
+	   	    noteTable, noteFileName, fieldDelim, lineDelim, errorFileName, \
+		    db.get_sqlServer(), db.get_sqlUser(), diagFileName)
+	    diagFile.write('%s\n' % bcpNote)
+	    os.system(bcpNote)
+    
+	    bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
+		    % (passwordFileName, db.get_sqlDatabase(), \
+	   	    noteChunkTable, noteChunkFileName, fieldDelim, lineDelim, errorFileName, \
+		    db.get_sqlServer(), db.get_sqlUser(), diagFileName)
+	    diagFile.write('%s\n' % bcpNote)
+	    os.system(bcpNote)
 
 #
 # Main
