@@ -8,6 +8,7 @@
 
 setenv CONFIGFILE $1
 
+source ${NOTELOAD}/Configuration
 source ${CONFIGFILE}
 
 cd ${NOTEDATADIR}
