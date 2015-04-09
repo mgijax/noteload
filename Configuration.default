@@ -10,8 +10,6 @@ endif
 
 source ${MGICONFIG}/master.config.csh
 
-setenv DB_TYPE sybase
-
 if ( ${DB_TYPE} == 'postgres' ) then
 
 setenv NOTELOAD_CMD "-S${PG_DBSERVER} -D${PG_DBNAME} -U${PG_DBUSER} -P${PG_1LINE_PASSFILE}"
