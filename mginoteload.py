@@ -399,12 +399,6 @@ def processFile():
 		except:
 			exit(1, 'Invalid Line (%d): %s\n' % (lineNum, line))
 
-		# make sure we escacpe these characters
-		if os.environ['DB_TYPE'] == 'postgres':
-			notes = notes.replace('#', '\#')
-			notes = notes.replace('?', '\?')
-			notes = notes.replace('\\n', '\\\n')
-
 		if mgiObjects.has_key(accID):
 			objectKey = mgiObjects[accID]
 		else:
@@ -438,32 +432,25 @@ def processFile():
 			       '%s' % (loaddate) + lineDelim)
 
 		# Write notes in chunks of 255
+		chunks = [notes[i:i+255] for i in range(0, len(notes), 255)]
 		seqNum = 1
 
-		# add blanks in case the newline falls in between 2 rows of seqNum
-		if os.environ['DB_TYPE'] == 'postgres':
-			if len(newNotes) > 255:
-				newNotes = newNotes.replace('\\\n', '    \\\n')
+		for chunk in chunks:
+			# make sure we escacpe these characters
+			if os.environ['DB_TYPE'] == 'postgres':
+				chunk = chunk.replace('\\', '\\\\')
+				chunk = chunk.replace('#', '\#')
+				chunk = chunk.replace('?', '\?')
+				chunk = chunk.replace('\n', '\\n')
 
-		while len(newNotes) > 255:
 			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
 		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
-		        noteChunkFile.write('%s' % (newNotes[:255]) + fieldDelim)
+		        noteChunkFile.write('%s' % (chunk) + fieldDelim)
 		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
 		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + fieldDelim)
 		        noteChunkFile.write('%s' % (loaddate) + lineDelim)
-			newNotes = newNotes[255:]
 			seqNum = seqNum + 1
-
-		if len(newNotes) > 0:
-			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
-		        noteChunkFile.write('%s' % (newNotes) + fieldDelim)
-		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		        noteChunkFile.write('%s' % (loaddate) + fieldDelim)
-		        noteChunkFile.write('%s' % (loaddate) + lineDelim)
 
 		noteKey = noteKey + 1
 
@@ -497,15 +484,15 @@ def bcpFiles():
 	    #diagFile.write('%s\n' % sqlCmd)
 	    #os.system(sqlCmd)
     
-	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'%s\';"' \
+	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
 		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-		       noteTable, noteFileName, fieldDelim,)
+		       noteTable, noteFileName, )
 	    diagFile.write('%s\n' % bcpNote)
 	    os.system(bcpNote)
     
-	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'%s\';"' \
+	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
 		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-		       noteChunkTable, noteChunkFileName, fieldDelim,)
+		       noteChunkTable, noteChunkFileName, )
 	    diagFile.write('%s\n' % bcpNote)
 	    os.system(bcpNote)
 
