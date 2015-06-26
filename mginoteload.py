@@ -88,20 +88,11 @@ import getopt
 import accessionlib
 import mgi_utils
 import loadlib
+import db
 
-try:
-    if os.environ['DB_TYPE'] == 'postgres':
-        import pg_db
-        db = pg_db
-        db.setTrace()
-        db.setAutoTranslateBE()
-    else:
-        import db
-        db.set_sqlLogFunction(db.sqlLogAll)
-
-except:
-    import db
-    db.set_sqlLogFunction(db.sqlLogAll)
+db.setTrace()
+db.setAutoTranslate(False)
+db.setAutoTranslateBE(False)
 
 #globals
 
@@ -306,7 +297,7 @@ def init():
 	results = db.sql('select accID, _Object_key from ACC_Accession ' + \
 		'where _MGIType_key = %s ' % (objectTypeKey) + \
 		'and _LogicalDB_key = 1 ' + \
-		'and prefixPart = "MGI:" ' + \
+		'and prefixPart = \'MGI:\' ' + \
 		'and preferred = 1', 'auto')
 	for r in results:
 		mgiObjects[r['accID']] = r['_Object_key']
@@ -330,7 +321,7 @@ def verifyNoteType():
 
 	results = db.sql('select _NoteType_key from MGI_NoteType ' + 
 		'where _MGIType_key = %s ' % (objectTypeKey) + \
-		'and noteType = "%s"' % (noteTypeName), 'auto')
+		'and noteType = \'%s\'' % (noteTypeName), 'auto')
 
 	if len(results) == 0:
 		exit(1, 'Invalid Note Type Name: %s\n' % (noteTypeName))
