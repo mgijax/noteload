@@ -377,6 +377,9 @@ def processFile():
 
 	for line in inputFile.readlines():
 
+		# de-escape newlines
+		line = line.replace('\\n','\n')
+
 		error = 0
 		lineNum = lineNum + 1
 
@@ -401,16 +404,7 @@ def processFile():
 	        if mode == 'incremental' or mode == 'preview':
 		    sqlFile.write('delete from MGI_Note where _MGIType_key = %s ' % (objectTypeKey) + \
 			    'and _NoteType_key = %s ' % (noteTypeKey) + \
-			    'and _Object_key = %s\ngo\n' % (objectKey))
-
-		newNotes = ''
-
-		if os.environ['DB_TYPE'] == 'postgres':
-			newNotes = notes
-		else:
-			noteTokens = string.split(notes, '\\n')
-			for n in noteTokens:
-				newNotes = newNotes + n + chr(10)
+			    'and _Object_key = %s\n;\n' % (objectKey))
 
 		noteFile.write('%s' % (noteKey) + fieldDelim + \
 			       '%d' % (objectKey) + fieldDelim + \
