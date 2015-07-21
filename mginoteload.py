@@ -421,11 +421,10 @@ def processFile():
 
 		for chunk in chunks:
 			# make sure we escacpe these characters
-			if os.environ['DB_TYPE'] == 'postgres':
-				chunk = chunk.replace('\\', '\\\\')
-				chunk = chunk.replace('#', '\#')
-				chunk = chunk.replace('?', '\?')
-				chunk = chunk.replace('\n', '\\n')
+			chunk = chunk.replace('\\', '\\\\')
+			chunk = chunk.replace('#', '\#')
+			chunk = chunk.replace('?', '\?')
+			chunk = chunk.replace('\n', '\\n')
 
 			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
 		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
@@ -462,43 +461,17 @@ def bcpFiles():
 	if DEBUG:
 		return
 
-        if os.environ['DB_TYPE'] == 'postgres':
-	    #sqlCmd = 'psql -a -h%s -d%s -U%s --command "%s;"' \
-	#	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
-	    #diagFile.write('%s\n' % sqlCmd)
-	    #os.system(sqlCmd)
+	bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
+	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
+	       noteTable, noteFileName, )
+	diagFile.write('%s\n' % bcpNote)
+	os.system(bcpNote)
     
-	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
-		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-		       noteTable, noteFileName, )
-	    diagFile.write('%s\n' % bcpNote)
-	    os.system(bcpNote)
-    
-	    bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
-		    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-		       noteChunkTable, noteChunkFileName, )
-	    diagFile.write('%s\n' % bcpNote)
-	    os.system(bcpNote)
-
-	else:
-	    sqlCmd = 'cat %s | isql -S%s -D%s -U%s -i%s' \
-		    % (passwordFileName, db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), sqlFileName)
-	    diagFile.write('%s\n' % sqlCmd)
-	    os.system(sqlCmd)
-    
-	    bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
-		    % (passwordFileName, db.get_sqlDatabase(), \
-	   	    noteTable, noteFileName, fieldDelim, lineDelim, errorFileName, \
-		    db.get_sqlServer(), db.get_sqlUser(), diagFileName)
-	    diagFile.write('%s\n' % bcpNote)
-	    os.system(bcpNote)
-    
-	    bcpNote = 'cat %s | bcp %s..%s in %s -c -t\"%s" -r"%s" -e %s -S%s -U%s >> %s' \
-		    % (passwordFileName, db.get_sqlDatabase(), \
-	   	    noteChunkTable, noteChunkFileName, fieldDelim, lineDelim, errorFileName, \
-		    db.get_sqlServer(), db.get_sqlUser(), diagFileName)
-	    diagFile.write('%s\n' % bcpNote)
-	    os.system(bcpNote)
+	bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
+	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
+	       noteChunkTable, noteChunkFileName, )
+	diagFile.write('%s\n' % bcpNote)
+	os.system(bcpNote)
 
 #
 # Main
