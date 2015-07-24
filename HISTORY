@@ -1,8 +1,13 @@
+TAG: noteload-6-0-0-1
+DATE: 07/24/2015
+STAFF: lec
+CHANGES:
+1) TR11750/postgres
+
 TAG: noteload-5-2-1-3
 DATE: 2015/06/12
 STAFF: kstone
 1) postgres
-
 
 TAG: noteload-tr11750-BP
 DATE: 04/09/2015
