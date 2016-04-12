@@ -90,9 +90,6 @@ import mgi_utils
 import loadlib
 import db
 
-db.setAutoTranslate(False)
-db.setAutoTranslateBE(False)
-
 #globals
 
 DEBUG = 0		# set DEBUG to false unless preview mode is selected
@@ -235,11 +232,9 @@ def init():
 
 	db.useOneConnection(1)
  
-	fdate = mgi_utils.date('%m%d%Y')	# current date
 	head, tail = os.path.split(inputFileName) 
-
-	diagFileName = tail + '.' + fdate + '.diagnostics'
-	errorFileName = tail + '.' + fdate + '.error'
+	diagFileName = tail + '.diagnostics'
+	errorFileName = tail + '.error'
 	noteFileName = tail + '.' + noteTable + '.bcp'
 	noteChunkFileName = tail + '.' + noteChunkTable + '.bcp'
 	sqlFileName = tail + '.sql'
@@ -293,11 +288,13 @@ def init():
 	objectTypeKey = accessionlib.get_MGIType_key(objectType)
 	createdByKey = loadlib.verifyUser(db.get_sqlUser(), 0, errorFile)
 
-	results = db.sql('select accID, _Object_key from ACC_Accession ' + \
-		'where _MGIType_key = %s ' % (objectTypeKey) + \
-		'and _LogicalDB_key = 1 ' + \
-		'and prefixPart = \'MGI:\' ' + \
-		'and preferred = 1', 'auto')
+	results = db.sql('''
+		select accID, _Object_key from ACC_Accession
+		where _MGIType_key = %s 
+		and _LogicalDB_key = 1 
+		and prefixPart = 'MGI:'
+		and preferred = 1
+		''' % (objectTypeKey), 'auto')
 	for r in results:
 		mgiObjects[r['accID']] = r['_Object_key']
 
@@ -318,9 +315,11 @@ def verifyNoteType():
 
 	global noteTypeKey
 
-	results = db.sql('select _NoteType_key from MGI_NoteType ' + 
-		'where _MGIType_key = %s ' % (objectTypeKey) + \
-		'and noteType = \'%s\'' % (noteTypeName), 'auto')
+	results = db.sql('''
+		select _NoteType_key from MGI_NoteType 
+		where _MGIType_key = %s
+		and noteType = '%s'
+		''' % (objectTypeKey, noteTypeName), 'auto')
 
 	if len(results) == 0:
 		exit(1, 'Invalid Note Type Name: %s\n' % (noteTypeName))
@@ -346,8 +345,7 @@ def verifyMode():
 
 	if mode == 'load':
 		DEBUG = 0
-		db.sql('delete from MGI_Note where _MGIType_key = %s ' % (objectTypeKey) + \
-			'and _NoteType_key = %s' % (noteTypeKey), None)
+		db.sql('delete from MGI_Note where _MGIType_key = %s and _NoteType_key = %s' % (objectTypeKey, noteTypeKey), None)
 	elif mode == 'incremental':
 		DEBUG = 0
 	elif mode == 'preview':
@@ -402,9 +400,12 @@ def processFile():
 		    continue
 
 	        if mode == 'incremental' or mode == 'preview':
-		    sqlFile.write('delete from MGI_Note where _MGIType_key = %s ' % (objectTypeKey) + \
-			    'and _NoteType_key = %s ' % (noteTypeKey) + \
-			    'and _Object_key = %s\n;\n' % (objectKey))
+		    sqlFile.write('''
+		    	delete from MGI_Note 
+			where _MGIType_key = %s 
+			and _NoteType_key = %s 
+			and _Object_key = %s;\n
+			''' % (objectTypeKey, noteTypeKey, objectKey))
 
 		noteFile.write('%s' % (noteKey) + fieldDelim + \
 			       '%d' % (objectKey) + fieldDelim + \
@@ -415,25 +416,20 @@ def processFile():
 			       '%s' % (loaddate) + fieldDelim + \
 			       '%s' % (loaddate) + lineDelim)
 
-		# Write notes in chunks of 255
-		chunks = [notes[i:i+255] for i in range(0, len(notes), 255)]
+		# make sure we escacpe these characters
+		notes = notes.replace('\\', '\\\\')
+		notes = notes.replace('#', '\#')
+		notes = notes.replace('?', '\?')
+		notes = notes.replace('\n', '\\n')
+
 		seqNum = 1
-
-		for chunk in chunks:
-			# make sure we escacpe these characters
-			chunk = chunk.replace('\\', '\\\\')
-			chunk = chunk.replace('#', '\#')
-			chunk = chunk.replace('?', '\?')
-			chunk = chunk.replace('\n', '\\n')
-
-			noteChunkFile.write('%s' % (noteKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (seqNum) + fieldDelim)
-		        noteChunkFile.write('%s' % (chunk) + fieldDelim)
-		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		        noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		        noteChunkFile.write('%s' % (loaddate) + fieldDelim)
-		        noteChunkFile.write('%s' % (loaddate) + lineDelim)
-			seqNum = seqNum + 1
+		noteChunkFile.write('%s' % (noteKey) + fieldDelim)
+		noteChunkFile.write('%d' % (seqNum) + fieldDelim)
+		noteChunkFile.write('%s' % (notes) + fieldDelim)
+		noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+		noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+		noteChunkFile.write('%s' % (loaddate) + fieldDelim)
+		noteChunkFile.write('%s' % (loaddate) + lineDelim)
 
 		noteKey = noteKey + 1
 
@@ -461,17 +457,22 @@ def bcpFiles():
 	if DEBUG:
 		return
 
-	bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
-	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-	       noteTable, noteFileName, )
+	bcpCommand = os.environ['PG_DBUTILS'] + '/bin/bcpin.csh'
+	currentDir = os.getcwd()
+
+	bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
+		% (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteTable, currentDir, noteFileName)
 	diagFile.write('%s\n' % bcpNote)
 	os.system(bcpNote)
-    
-	bcpNote = 'psql -a -h%s -d%s -U%s --command "\copy mgd.%s from \'%s\' with null as \'\' delimiter as E\'\\t\';"' \
-	    % (db.get_sqlServer(), db.get_sqlDatabase(), db.get_sqlUser(), \
-	       noteChunkTable, noteChunkFileName, )
+
+	bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
+		% (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteChunkTable, currentDir, noteChunkFileName)
 	diagFile.write('%s\n' % bcpNote)
 	os.system(bcpNote)
+
+	#
+	# to do: execute sqlFile
+	#
 
 #
 # Main

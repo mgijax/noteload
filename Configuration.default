@@ -10,6 +10,5 @@ endif
 
 source ${MGICONFIG}/master.config.csh
 
-
 setenv NOTELOAD_CMD "-S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE}"
 
