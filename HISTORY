@@ -1,5 +1,5 @@
-TAG: noteload-?
-DATE: 04/12/2016
+TAG: noteload-6-0-4-1
+DATE: 04/12/2016, 05/04/2016
 STAFF: lec
 CHANGES:
 1) using new postgres scripts in bcpFiles()
