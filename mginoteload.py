@@ -90,9 +90,6 @@ import mgi_utils
 import loadlib
 import db
 
-db.setAutoTranslate(False)
-db.setAutoTranslateBE(False)
-
 #globals
 
 DEBUG = 0		# set DEBUG to false unless preview mode is selected
