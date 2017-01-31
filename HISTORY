@@ -1,4 +1,11 @@
 TAG: noteload-6-0-7-1
+DATE: 01/31/2017
+STAFF: sc
+CHANGES: TR9835 location notes
+1) mginoteload.csh - bug  ${NOTELOAD}/Configuration sourced; NOTELOAD defined
+   in Configuration
+
+TAG: noteload-6-0-7-1
 DATE: 01/05/2017
 STAFF: lec 
 CHANGES:

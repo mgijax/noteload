@@ -1,4 +1,4 @@
-#!/bin/csh -f
+#!/bin/csh -fx
 
 #
 # Wrapper script to create & load notes into MGI_Note
@@ -8,7 +8,10 @@
 
 setenv CONFIGFILE $1
 
-source ${NOTELOAD}/Configuration
+
+cd `dirname $0`
+
+source ./Configuration
 source ${CONFIGFILE}
 
 cd ${NOTEDATADIR}
