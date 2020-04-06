@@ -81,7 +81,6 @@
 
 import sys
 import os
-import string
 import re
 import getopt
 import accessionlib
