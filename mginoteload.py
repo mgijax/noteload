@@ -1,4 +1,3 @@
-#!/usr/local/bin/python
 
 '''
 #
@@ -125,88 +124,88 @@ mgiObjects = {}
 loaddate = loadlib.loaddate
 
 def showUsage():
-	'''
-	# requires:
-	#
-	# effects:
-	# Displays the correct usage of this program and exits
-	# with status of 1.
-	#
-	# returns:
-	'''
+        '''
+        # requires:
+        #
+        # effects:
+        # Displays the correct usage of this program and exits
+        # with status of 1.
+        #
+        # returns:
+        '''
  
-	usage = 'usage: %s -S server\n' % sys.argv[0] + \
-		'-D database\n' + \
-		'-U user\n' + \
-		'-P password file\n' + \
-		'-M mode\n' + \
-		'-I input file\n' + \
-		'-O object type\n' + \
-		'-T note type name\n'
-	exit(1, usage)
+        usage = 'usage: %s -S server\n' % sys.argv[0] + \
+                '-D database\n' + \
+                '-U user\n' + \
+                '-P password file\n' + \
+                '-M mode\n' + \
+                '-I input file\n' + \
+                '-O object type\n' + \
+                '-T note type name\n'
+        exit(1, usage)
  
 def exit(status, message = None):
-	'''
-	# requires: status, the numeric exit status (integer)
-	#           message (string)
-	#
-	# effects:
-	# Print message to stderr and exits
-	#
-	# returns:
-	#
-	'''
+        '''
+        # requires: status, the numeric exit status (integer)
+        #           message (str.
+        #
+        # effects:
+        # Print message to stderr and exits
+        #
+        # returns:
+        #
+        '''
  
-	if message is not None:
-		sys.stderr.write('\n' + str(message) + '\n')
+        if message is not None:
+                sys.stderr.write('\n' + str(message) + '\n')
  
-	try:
-		diagFile.write('\n\nEnd Date/Time: %s\n' % (mgi_utils.date()))
-		errorFile.write('\n\nEnd Date/Time: %s\n' % (mgi_utils.date()))
-		diagFile.close()
-		errorFile.close()
-	except:
-		pass
+        try:
+                diagFile.write('\n\nEnd Date/Time: %s\n' % (mgi_utils.date()))
+                errorFile.write('\n\nEnd Date/Time: %s\n' % (mgi_utils.date()))
+                diagFile.close()
+                errorFile.close()
+        except:
+                pass
 
-	sys.exit(status)
+        sys.exit(status)
  
 def init():
-	'''
-	# requires: 
-	#
-	# effects: 
-	# 1. Processes command line options
-	# 2. Initializes local DBMS parameters
-	# 3. Initializes global file descriptors/file names
-	#
-	# returns:
-	#
-	'''
+        '''
+        # requires: 
+        #
+        # effects: 
+        # 1. Processes command line options
+        # 2. Initializes local DBMS parameters
+        # 3. Initializes global file descriptors/file names
+        #
+        # returns:
+        #
+        '''
  
-	global inputFile, diagFile, errorFile, errorFileName, diagFileName
-	global passwordFileName
-	global noteFile, noteFileName, noteChunkFile, noteChunkFileName, sqlFile, sqlFileName
-	global mode
-	global noteTypeName
-	global objectTypeKey, createdByKey
-	global mgiObjects
+        global inputFile, diagFile, errorFile, errorFileName, diagFileName
+        global passwordFileName
+        global noteFile, noteFileName, noteChunkFile, noteChunkFileName, sqlFile, sqlFileName
+        global mode
+        global noteTypeName
+        global objectTypeKey, createdByKey
+        global mgiObjects
  
-	try:
-		optlist, args = getopt.getopt(sys.argv[1:], 'S:D:U:P:M:I:O:T:')
-	except:
-		showUsage()
+        try:
+                optlist, args = getopt.getopt(sys.argv[1:], 'S:D:U:P:M:I:O:T:')
+        except:
+                showUsage()
  
-	#
-	# Set server, database, user, passwords depending on options
-	# specified by user.
-	#
+        #
+        # Set server, database, user, passwords depending on options
+        # specified by user.
+        #
  
-	server = None
-	database = None
-	user = None
-	password = None
+        server = None
+        database = None
+        user = None
+        password = None
  
-	for opt in optlist:
+        for opt in optlist:
                 if opt[0] == '-S':
                         server = opt[1]
                 elif opt[0] == '-D':
@@ -214,7 +213,7 @@ def init():
                 elif opt[0] == '-U':
                         user = opt[1]
                 elif opt[0] == '-P':
-			passwordFileName = opt[1]
+                        passwordFileName = opt[1]
                 elif opt[0] == '-M':
                         mode = opt[1]
                 elif opt[0] == '-I':
@@ -226,253 +225,253 @@ def init():
                 else:
                         showUsage()
  
-	# Initialize db.py DBMS parameters
-        password = string.strip(open(passwordFileName, 'r').readline())
-	db.set_sqlLogin(user, password, server, database)
+        # Initialize db.py DBMS parameters
+        password = str.strip(open(passwordFileName, 'r').readline())
+        db.set_sqlLogin(user, password, server, database)
 
-	db.useOneConnection(1)
+        db.useOneConnection(1)
  
-	head, tail = os.path.split(inputFileName) 
-	diagFileName = tail + '.diagnostics'
-	errorFileName = tail + '.error'
-	noteFileName = tail + '.' + noteTable + '.bcp'
-	noteChunkFileName = tail + '.' + noteChunkTable + '.bcp'
-	sqlFileName = tail + '.sql'
+        head, tail = os.path.split(inputFileName) 
+        diagFileName = tail + '.diagnostics'
+        errorFileName = tail + '.error'
+        noteFileName = tail + '.' + noteTable + '.bcp'
+        noteChunkFileName = tail + '.' + noteChunkTable + '.bcp'
+        sqlFileName = tail + '.sql'
 
-	try:
-		inputFile = open(inputFileName, 'r')
-	except:
-		exit(1, 'Could not open file %s\n' % inputFileName)
-		
-	try:
-		diagFile = open(diagFileName, 'w')
-	except:
-		exit(1, 'Could not open file %s\n' % diagFileName)
-		
-	try:
-		errorFile = open(errorFileName, 'w')
-	except:
-		exit(1, 'Could not open file %s\n' % errorFileName)
-		
-	try:
-		noteFile = open(noteFileName, 'w')
-	except:
-		exit(1, 'Could not open file %s\n' % noteFileName)
-		
-	try:
-		noteChunkFile = open(noteChunkFileName, 'w')
-	except:
-		exit(1, 'Could not open file %s\n' % noteChunkFileName)
-		
-	try:
-		sqlFile = open(sqlFileName, 'w')
-	except:
-		exit(1, 'Could not open file %s\n' % sqlFileName)
-		
-	# Set Log File Descriptor
-	try:
-		db.set_sqlLogFD(diagFile)
-	except:
-		pass
+        try:
+                inputFile = open(inputFileName, 'r')
+        except:
+                exit(1, 'Could not open file %s\n' % inputFileName)
+                
+        try:
+                diagFile = open(diagFileName, 'w')
+        except:
+                exit(1, 'Could not open file %s\n' % diagFileName)
+                
+        try:
+                errorFile = open(errorFileName, 'w')
+        except:
+                exit(1, 'Could not open file %s\n' % errorFileName)
+                
+        try:
+                noteFile = open(noteFileName, 'w')
+        except:
+                exit(1, 'Could not open file %s\n' % noteFileName)
+                
+        try:
+                noteChunkFile = open(noteChunkFileName, 'w')
+        except:
+                exit(1, 'Could not open file %s\n' % noteChunkFileName)
+                
+        try:
+                sqlFile = open(sqlFileName, 'w')
+        except:
+                exit(1, 'Could not open file %s\n' % sqlFileName)
+                
+        # Set Log File Descriptor
+        try:
+                db.set_sqlLogFD(diagFile)
+        except:
+                pass
 
-	diagFile.write('Start Date/Time: %s\n' % (mgi_utils.date()))
-	diagFile.write('Server: %s\n' % (server))
-	diagFile.write('Database: %s\n' % (database))
-	diagFile.write('User: %s\n' % (user))
-	diagFile.write('Input File: %s\n' % (inputFileName))
-	diagFile.write('Object Type: %s\n' % (objectType))
-	diagFile.write('Note Type: %s\n' % (noteTypeName))
+        diagFile.write('Start Date/Time: %s\n' % (mgi_utils.date()))
+        diagFile.write('Server: %s\n' % (server))
+        diagFile.write('Database: %s\n' % (database))
+        diagFile.write('User: %s\n' % (user))
+        diagFile.write('Input File: %s\n' % (inputFileName))
+        diagFile.write('Object Type: %s\n' % (objectType))
+        diagFile.write('Note Type: %s\n' % (noteTypeName))
 
-	errorFile.write('Start Date/Time: %s\n\n' % (mgi_utils.date()))
+        errorFile.write('Start Date/Time: %s\n\n' % (mgi_utils.date()))
 
-	objectTypeKey = accessionlib.get_MGIType_key(objectType)
-	createdByKey = loadlib.verifyUser(db.get_sqlUser(), 0, errorFile)
+        objectTypeKey = accessionlib.get_MGIType_key(objectType)
+        createdByKey = loadlib.verifyUser(db.get_sqlUser(), 0, errorFile)
 
-	results = db.sql('''
-		select accID, _Object_key from ACC_Accession
-		where _MGIType_key = %s 
-		and _LogicalDB_key = 1 
-		and prefixPart = 'MGI:'
-		and preferred = 1
-		''' % (objectTypeKey), 'auto')
-	for r in results:
-		mgiObjects[r['accID']] = r['_Object_key']
+        results = db.sql('''
+                select accID, _Object_key from ACC_Accession
+                where _MGIType_key = %s 
+                and _LogicalDB_key = 1 
+                and prefixPart = 'MGI:'
+                and preferred = 1
+                ''' % (objectTypeKey), 'auto')
+        for r in results:
+                mgiObjects[r['accID']] = r['_Object_key']
 
 def verifyNoteType():
-	'''
-	# requires:
-	#
-	# effects:
-	#	verifies that the Note Type Name exists in the MGI_NoteType table
-	#	if it does not exist, an error is written to the error file and the
-	#	program is aborted.
-	#	if it does exist, the global noteTypeKey is set accordingly
-	#
-	# returns:
-	#	nothing
-	#
-	'''
+        '''
+        # requires:
+        #
+        # effects:
+        #	verifies that the Note Type Name exists in the MGI_NoteType table
+        #	if it does not exist, an error is written to the error file and the
+        #	program is aborted.
+        #	if it does exist, the global noteTypeKey is set accordingly
+        #
+        # returns:
+        #	nothing
+        #
+        '''
 
-	global noteTypeKey
+        global noteTypeKey
 
-	results = db.sql('''
-		select _NoteType_key from MGI_NoteType 
-		where _MGIType_key = %s
-		and noteType = '%s'
-		''' % (objectTypeKey, noteTypeName), 'auto')
+        results = db.sql('''
+                select _NoteType_key from MGI_NoteType 
+                where _MGIType_key = %s
+                and noteType = '%s'
+                ''' % (objectTypeKey, noteTypeName), 'auto')
 
-	if len(results) == 0:
-		exit(1, 'Invalid Note Type Name: %s\n' % (noteTypeName))
-	else:
-		noteTypeKey = results[0]['_NoteType_key']
+        if len(results) == 0:
+                exit(1, 'Invalid Note Type Name: %s\n' % (noteTypeName))
+        else:
+                noteTypeKey = results[0]['_NoteType_key']
 
 def verifyMode():
-	'''
-	# requires:
-	#
-	# effects:
-	#	Verifies the processing mode is valid.  If it is not valid,
-	#	the program is aborted.
-	#	Sets globals based on processing mode.
-	#	Deletes data based on processing mode.
-	#
-	# returns:
-	#	nothing
-	#
-	'''
+        '''
+        # requires:
+        #
+        # effects:
+        #	Verifies the processing mode is valid.  If it is not valid,
+        #	the program is aborted.
+        #	Sets globals based on processing mode.
+        #	Deletes data based on processing mode.
+        #
+        # returns:
+        #	nothing
+        #
+        '''
 
-	global DEBUG
+        global DEBUG
 
-	if mode == 'load':
-		DEBUG = 0
-		db.sql('delete from MGI_Note where _MGIType_key = %s and _NoteType_key = %s' % (objectTypeKey, noteTypeKey), None)
-	elif mode == 'incremental':
-		DEBUG = 0
-	elif mode == 'preview':
-		DEBUG = 1
-	else:
-		exit(1, 'Invalid Processing Mode:  %s\n' % (mode))
+        if mode == 'load':
+                DEBUG = 0
+                db.sql('delete from MGI_Note where _MGIType_key = %s and _NoteType_key = %s' % (objectTypeKey, noteTypeKey), None)
+        elif mode == 'incremental':
+                DEBUG = 0
+        elif mode == 'preview':
+                DEBUG = 1
+        else:
+                exit(1, 'Invalid Processing Mode:  %s\n' % (mode))
 
 def processFile():
-	'''
-	# requires:
-	#
-	# effects:
-	#	Reads input file
-	#	Verifies and Processes each line in the input file
-	#
-	# returns:
-	#	nothing
-	#
-	'''
+        '''
+        # requires:
+        #
+        # effects:
+        #	Reads input file
+        #	Verifies and Processes each line in the input file
+        #
+        # returns:
+        #	nothing
+        #
+        '''
 
-	lineNum = 0
+        lineNum = 0
 
-	results = db.sql('select max(_Note_key) + 1 as nextKey from MGI_Note', 'auto')
-	noteKey = results[0]['nextKey']
+        results = db.sql('select max(_Note_key) + 1 as nextKey from MGI_Note', 'auto')
+        noteKey = results[0]['nextKey']
 
-	# For each line in the input file
+        # For each line in the input file
 
-	for line in inputFile.readlines():
+        for line in inputFile.readlines():
 
-		# de-escape newlines
-		line = line.replace('\\n','\n')
+                # de-escape newlines
+                line = line.replace('\\n','\n')
 
-		error = 0
-		lineNum = lineNum + 1
+                error = 0
+                lineNum = lineNum + 1
 
-		# Split the line into tokens
-		tokens = string.split(line[:-1], splitfieldDelim)
+                # Split the line into tokens
+                tokens = str.split(line[:-1], splitfieldDelim)
 
-		try:
-			accID = tokens[0]
-			notes = tokens[1]
-		except:
-			exit(1, 'Invalid Line (%d): %s\n' % (lineNum, line))
+                try:
+                        accID = tokens[0]
+                        notes = tokens[1]
+                except:
+                        exit(1, 'Invalid Line (%d): %s\n' % (lineNum, line))
 
-		if mgiObjects.has_key(accID):
-			objectKey = mgiObjects[accID]
-		else:
-			continue
+                if accID in mgiObjects:
+                        objectKey = mgiObjects[accID]
+                else:
+                        continue
 #			exit(1, 'Invalid Accession ID (%d): %s\n' % (lineNum, accID))
 
-		if len(notes) == 0:
-		    continue
+                if len(notes) == 0:
+                    continue
 
-	        if mode == 'incremental' or mode == 'preview':
-		    sqlFile.write('''
-		    	delete from MGI_Note 
-			where _MGIType_key = %s 
-			and _NoteType_key = %s 
-			and _Object_key = %s;\n
-			''' % (objectTypeKey, noteTypeKey, objectKey))
+                if mode == 'incremental' or mode == 'preview':
+                    sqlFile.write('''
+                        delete from MGI_Note 
+                        where _MGIType_key = %s 
+                        and _NoteType_key = %s 
+                        and _Object_key = %s;\n
+                        ''' % (objectTypeKey, noteTypeKey, objectKey))
 
-		noteFile.write('%s' % (noteKey) + fieldDelim + \
-			       '%d' % (objectKey) + fieldDelim + \
-			       '%d' % (objectTypeKey) + fieldDelim + \
-			       '%d' % (noteTypeKey) + fieldDelim + \
-			       '%d' % (createdByKey) + fieldDelim + \
-			       '%d' % (createdByKey) + fieldDelim + \
-			       '%s' % (loaddate) + fieldDelim + \
-			       '%s' % (loaddate) + lineDelim)
+                noteFile.write('%s' % (noteKey) + fieldDelim + \
+                               '%d' % (objectKey) + fieldDelim + \
+                               '%d' % (objectTypeKey) + fieldDelim + \
+                               '%d' % (noteTypeKey) + fieldDelim + \
+                               '%d' % (createdByKey) + fieldDelim + \
+                               '%d' % (createdByKey) + fieldDelim + \
+                               '%s' % (loaddate) + fieldDelim + \
+                               '%s' % (loaddate) + lineDelim)
 
-		# make sure we escacpe these characters
-		notes = notes.replace('\\', '\\\\')
-		notes = notes.replace('#', '\#')
-		notes = notes.replace('?', '\?')
-		notes = notes.replace('\n', '\\n')
+                # make sure we escacpe these characters
+                notes = notes.replace('\\', '\\\\')
+                notes = notes.replace('#', '\#')
+                notes = notes.replace('?', '\?')
+                notes = notes.replace('\n', '\\n')
 
-		seqNum = 1
-		noteChunkFile.write('%s' % (noteKey) + fieldDelim)
-		noteChunkFile.write('%d' % (seqNum) + fieldDelim)
-		noteChunkFile.write('%s' % (notes) + fieldDelim)
-		noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-		noteChunkFile.write('%s' % (loaddate) + fieldDelim)
-		noteChunkFile.write('%s' % (loaddate) + lineDelim)
+                seqNum = 1
+                noteChunkFile.write('%s' % (noteKey) + fieldDelim)
+                noteChunkFile.write('%d' % (seqNum) + fieldDelim)
+                noteChunkFile.write('%s' % (notes) + fieldDelim)
+                noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+                noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
+                noteChunkFile.write('%s' % (loaddate) + fieldDelim)
+                noteChunkFile.write('%s' % (loaddate) + lineDelim)
 
-		noteKey = noteKey + 1
+                noteKey = noteKey + 1
 
 #	end of "for line in inputFile.readlines():"
 
 def bcpFiles():
-	'''
-	# requires:
-	#
-	# effects:
-	#	BCPs the data into the database
-	#
-	# returns:
-	#	nothing
-	#
-	'''
+        '''
+        # requires:
+        #
+        # effects:
+        #	BCPs the data into the database
+        #
+        # returns:
+        #	nothing
+        #
+        '''
 
-	db.commit()
-	db.useOneConnection()
+        db.commit()
+        db.useOneConnection()
 
-	noteFile.close()
-	noteChunkFile.close()
-	sqlFile.close()
+        noteFile.close()
+        noteChunkFile.close()
+        sqlFile.close()
 
-	if DEBUG:
-		return
+        if DEBUG:
+                return
 
-	bcpCommand = os.environ['PG_DBUTILS'] + '/bin/bcpin.csh'
-	currentDir = os.getcwd()
+        bcpCommand = os.environ['PG_DBUTILS'] + '/bin/bcpin.csh'
+        currentDir = os.getcwd()
 
-	bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
-		% (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteTable, currentDir, noteFileName)
-	diagFile.write('%s\n' % bcpNote)
-	os.system(bcpNote)
+        bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
+                % (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteTable, currentDir, noteFileName)
+        diagFile.write('%s\n' % bcpNote)
+        os.system(bcpNote)
 
-	bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
-		% (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteChunkTable, currentDir, noteChunkFileName)
-	diagFile.write('%s\n' % bcpNote)
-	os.system(bcpNote)
+        bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
+                % (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteChunkTable, currentDir, noteChunkFileName)
+        diagFile.write('%s\n' % bcpNote)
+        os.system(bcpNote)
 
-	#
-	# to do: execute sqlFile
-	#
+        #
+        # to do: execute sqlFile
+        #
 
 #
 # Main
@@ -484,4 +483,3 @@ verifyMode()
 processFile()
 bcpFiles()
 exit(0)
-
