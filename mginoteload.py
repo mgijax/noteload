@@ -188,7 +188,8 @@ def init():
         global noteTypeName
         global objectTypeKey, createdByKey
         global mgiObjects
- 
+        global server, database, user
+        print('init')
         try:
                 optlist, args = getopt.getopt(sys.argv[1:], 'S:D:U:P:M:I:O:T:')
         except:
@@ -363,7 +364,7 @@ def processFile():
         #	nothing
         #
         '''
-
+        print('processFile')
         lineNum = 0
 
         results = db.sql('select max(_Note_key) + 1 as nextKey from MGI_Note', 'auto')
@@ -438,13 +439,13 @@ def bcpFiles():
         # requires:
         #
         # effects:
+        #       If incremental mode, runs sql to delete existing objects 
         #	BCPs the data into the database
-        #
         # returns:
         #	nothing
         #
         '''
-
+        print('bcpFiles')
         db.commit()
         db.useOneConnection()
 
@@ -454,6 +455,12 @@ def bcpFiles():
 
         if DEBUG:
                 return
+
+        if mode == 'incremental':
+            cmd = 'psql -h %s -d %s -U %s -f %s -o %s.log' % (server, database, user, sqlFileName, sqlFileName)
+            print('cmd: %s' % cmd)
+            os.system(cmd)
+            db.commit()
 
         bcpCommand = os.environ['PG_DBUTILS'] + '/bin/bcpin.csh'
         currentDir = os.getcwd()
@@ -468,10 +475,7 @@ def bcpFiles():
         diagFile.write('%s\n' % bcpNote)
         os.system(bcpNote)
 
-        #
-        # to do: execute sqlFile
-        #
-
+        db.commit()
 #
 # Main
 #
