@@ -96,18 +96,15 @@ inputFile = ''		# file descriptor
 diagFile = ''		# file descriptor
 errorFile = ''		# file descriptor
 noteFile = ''		# file descriptor
-noteChunkFile = ''	# file descriptor
 sqlFile = ''		# file descriptor
 
 diagFileName = ''	# file name
 errorFileName = ''	# file name
 noteFileName = ''	# file name
-noteChunkFileName = ''	# file name
 passwordFileName = ''	# file name
 sqlFileName = ''	# file name
 
 noteTable = 'MGI_Note'
-noteChunkTable = 'MGI_NoteChunk'
 
 mode = ''		# processing mode
 noteTypeName = ''	# MGI_NoteType.noteType
@@ -183,7 +180,7 @@ def init():
  
         global inputFile, diagFile, errorFile, errorFileName, diagFileName
         global passwordFileName
-        global noteFile, noteFileName, noteChunkFile, noteChunkFileName, sqlFile, sqlFileName
+        global noteFile, noteFileName, sqlFile, sqlFileName
         global mode
         global noteTypeName
         global objectTypeKey, createdByKey
@@ -235,7 +232,6 @@ def init():
         diagFileName = tail + '.diagnostics'
         errorFileName = tail + '.error'
         noteFileName = tail + '.' + noteTable + '.bcp'
-        noteChunkFileName = tail + '.' + noteChunkTable + '.bcp'
         sqlFileName = tail + '.sql'
 
         try:
@@ -257,11 +253,6 @@ def init():
                 noteFile = open(noteFileName, 'w')
         except:
                 exit(1, 'Could not open file %s\n' % noteFileName)
-                
-        try:
-                noteChunkFile = open(noteChunkFileName, 'w')
-        except:
-                exit(1, 'Could not open file %s\n' % noteChunkFileName)
                 
         try:
                 sqlFile = open(sqlFileName, 'w')
@@ -367,7 +358,7 @@ def processFile():
         print('processFile')
         lineNum = 0
 
-        results = db.sql('select max(_Note_key) + 1 as nextKey from MGI_Note', 'auto')
+        results = db.sql(''' select nextval('mgi_note_seq') as nextKey ''', 'auto')
         noteKey = results[0]['nextKey']
 
         # For each line in the input file
@@ -406,29 +397,21 @@ def processFile():
                         and _Object_key = %s;\n
                         ''' % (objectTypeKey, noteTypeKey, objectKey))
 
-                noteFile.write('%s' % (noteKey) + fieldDelim + \
-                               '%d' % (objectKey) + fieldDelim + \
-                               '%d' % (objectTypeKey) + fieldDelim + \
-                               '%d' % (noteTypeKey) + fieldDelim + \
-                               '%d' % (createdByKey) + fieldDelim + \
-                               '%d' % (createdByKey) + fieldDelim + \
-                               '%s' % (loaddate) + fieldDelim + \
-                               '%s' % (loaddate) + lineDelim)
-
                 # make sure we escacpe these characters
                 notes = notes.replace('\\', '\\\\')
                 notes = notes.replace('#', '\#')
                 notes = notes.replace('?', '\?')
                 notes = notes.replace('\n', '\\n')
 
-                seqNum = 1
-                noteChunkFile.write('%s' % (noteKey) + fieldDelim)
-                noteChunkFile.write('%d' % (seqNum) + fieldDelim)
-                noteChunkFile.write('%s' % (notes) + fieldDelim)
-                noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-                noteChunkFile.write('%d' % (createdByKey) + fieldDelim)
-                noteChunkFile.write('%s' % (loaddate) + fieldDelim)
-                noteChunkFile.write('%s' % (loaddate) + lineDelim)
+                noteFile.write('%s' % (noteKey) + fieldDelim + \
+                               '%d' % (objectKey) + fieldDelim + \
+                               '%d' % (objectTypeKey) + fieldDelim + \
+                               '%d' % (noteTypeKey) + fieldDelim + \
+                               '%s' % (notes) + fieldDelim + \
+                               '%d' % (createdByKey) + fieldDelim + \
+                               '%d' % (createdByKey) + fieldDelim + \
+                               '%s' % (loaddate) + fieldDelim + \
+                               '%s' % (loaddate) + lineDelim)
 
                 noteKey = noteKey + 1
 
@@ -450,7 +433,6 @@ def bcpFiles():
         db.useOneConnection()
 
         noteFile.close()
-        noteChunkFile.close()
         sqlFile.close()
 
         if DEBUG:
@@ -470,11 +452,8 @@ def bcpFiles():
         diagFile.write('%s\n' % bcpNote)
         os.system(bcpNote)
 
-        bcpNote =  '%s %s %s %s %s %s "\\t" "\\n" mgd' \
-                % (bcpCommand, db.get_sqlServer(), db.get_sqlDatabase(), noteChunkTable, currentDir, noteChunkFileName)
-        diagFile.write('%s\n' % bcpNote)
-        os.system(bcpNote)
-
+        # update mgi_note_seq auto-sequence
+        db.sql(''' select setval('mgi_note_seq', (select max(_Note_key) from MGI_Note)) ''', None)
         db.commit()
 #
 # Main
