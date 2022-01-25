@@ -5,7 +5,6 @@
 #
 #	To load Notes into the MGI Note structures:
 #		MGI_Note
-#		MGI_NoteChunk
 #
 # Assumes:
 #
@@ -358,8 +357,8 @@ def processFile():
         print('processFile')
         lineNum = 0
 
-        results = db.sql(''' select nextval('mgi_note_seq') as nextKey ''', 'auto')
-        noteKey = results[0]['nextKey']
+        results = db.sql(''' select nextval('mgi_note_seq') as maxKey ''', 'auto')
+        noteKey = results[0]['maxKey']
 
         # For each line in the input file
 
