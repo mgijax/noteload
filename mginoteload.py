@@ -397,10 +397,10 @@ def processFile():
                         ''' % (objectTypeKey, noteTypeKey, objectKey))
 
                 # make sure we escacpe these characters
-                notes = notes.replace('\\', '\\\\')
-                notes = notes.replace('#', '\#')
-                notes = notes.replace('?', '\?')
-                notes = notes.replace('\n', '\\n')
+                notes = notes.replace('\\', r'\\\\')
+                notes = notes.replace('#', r'\#')
+                notes = notes.replace('?', r'\?')
+                notes = notes.replace('\n', r'\\n')
 
                 noteFile.write('%s' % (noteKey) + fieldDelim + \
                                '%d' % (objectKey) + fieldDelim + \
