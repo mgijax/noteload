@@ -400,7 +400,7 @@ def processFile():
                 notes = notes.replace('\\', r'\\\\')
                 notes = notes.replace('#', r'\#')
                 notes = notes.replace('?', r'\?')
-                notes = notes.replace('\n', r'\\n')
+                notes = notes.replace('\n', '\\n')
 
                 noteFile.write('%s' % (noteKey) + fieldDelim + \
                                '%d' % (objectKey) + fieldDelim + \
